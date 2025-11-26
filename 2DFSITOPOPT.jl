@@ -1,35 +1,24 @@
-
 using Pkg
 Pkg.activate()
 import Pkg
-
+# Add here your .msh file with all the corresponding labels, file must be created with Gmsh or GridapGmsh.jl
+mesh_file_path = "Your/path/to/.msh" 
+# Setup Environment, specially if used for the first time 
 function setup_environment()
-    println("Initializing Environment...")
-    Pkg.activate(".") # Activate the current directory as the project
-
-    # --- WINDOWS COMPATIBILITY FIX ---
-    # GridapTopOpt depends on P4est. On Windows, P4est_jll versions > 2.8.1
-    # are known to cause precompilation failures (binary incompatibilities).
-    # We must install and PIN P4est_jll to v2.8.1 BEFORE adding GridapTopOpt.
+    Pkg.activate(".")
     if Sys.iswindows()
-        println("  -> Windows detected: Enforcing P4est_jll v2.8.1 compatibility...")
         try
-            # Check if already installed/pinned to avoid redundant operations
             installed = haskey(Pkg.project().dependencies, "P4est_jll")
             if !installed
-                println("  -> Installing P4est_jll v2.8.1...")
-                Pkg.add(name="P4est_jll", version="2.8.1")
+                Pkg.add(name="P4est_jll", version="2.8.1") #Further versions might cause issues in windows 
                 Pkg.pin("P4est_jll")
-                println("  -> P4est_jll successfully pinned.")
             else
-                println("  -> P4est_jll is already present.")
+                println("P4est_jll is already installed.")
             end
         catch e
             @warn "Failed to pin P4est_jll. This might cause GridapTopOpt precompilation errors on Windows." exception=e
         end
     end
-
-    # List of external packages required (Standard Libraries like LinearAlgebra are skipped)
     required_packages = [
         "LineSearches",
         "SparseMatricesCSR",
@@ -45,23 +34,17 @@ function setup_environment()
         "ChainRulesCore",
         "GridapSolvers"
     ]
-
-    # Install missing packages
     for pkg in required_packages
         if Base.find_package(pkg) === nothing
             println("  -> Installing missing package: $pkg...")
             Pkg.add(pkg)
         end
     end
-    
-    # Ensure everything is instantiated
     Pkg.instantiate()
     println("Environment ready.")
 end
 
-# Run setup before loading packages
 setup_environment()
-
 
 using LineSearches
 using LinearAlgebra
@@ -245,7 +228,6 @@ struct SelfAdjointAffineFEStateMap{A,B,C,D,E,F} <: AbstractFEStateMap
   param      :: D
   plb_caches :: E
   pde_caches :: F
-
   function SelfAdjointAffineFEStateMap(
     a::Function,l::Function,
     U,V,V_φ,U_reg,φh,dΩ...;
@@ -353,7 +335,6 @@ struct ConstantSelfAdjointAffineFEStateMap{A,B,C,D} <: AbstractFEStateMap
     y  = allocate_in_domain(K); fill!(y,zero(eltype(y)))
     ns = numerical_setup(symbolic_setup(ls,K),K)
     pde_caches = (ns,K,b,x,y,assem_U)
-
     A,B = typeof(liform), typeof(spaces)
     C,D = typeof(plb_caches),typeof(pde_caches)
     return new{A,B,C,D}(liform,spaces,plb_caches,pde_caches)
@@ -944,10 +925,6 @@ end
 
 # EXECUTION
 
-# mesh_file_path = "C:/Users/ricar/OneDrive/Escritorio/GridapTopOpt2/airfoilfinemsh" 
-
-mesh_file_path = "C:/Users/ricar/OneDrive/Escritorio/GridapTopOpt2/airfoilfinemsh" 
-
 NavierImmersedBody(
     backend=:sequential,
     np=(1,1),
@@ -959,5 +936,5 @@ NavierImmersedBody(
     max_iter=100,
     verbose=true,
     path="./results",
-    title="navierfoilfine_optimized",
+    title="navierimmersed_optimized",
 )
