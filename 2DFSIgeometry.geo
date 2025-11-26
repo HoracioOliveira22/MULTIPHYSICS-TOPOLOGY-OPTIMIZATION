@@ -91,7 +91,6 @@ Physical Curve("inlet") = {6};
 Physical Curve("outlet") = {8};
 Physical Curve("noSlip") = {7, 9};
 Physical Curve("fixed") = {2,3,4,5};
-Physical Curve("cylinder") = {2,3,4,5};
 Physical Curve("interface") = {1};
 Physical Point("fixed") = {36,37,38,39};
 Physical Point("interface") = {1};
@@ -99,3 +98,4 @@ Physical Point("noSlip") = {40,41};
 Physical Point("outlet") = {42,43};
 
 Mesh 2;
+
